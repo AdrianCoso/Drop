@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.MathUtils;
@@ -23,15 +24,17 @@ public class GameScreen implements Screen {
     Texture dropImage;
     Texture balaImage;
     Texture bucketImage;
-    Sound dropSound;
+    Texture liveImage;
+    Sound hitSound;
+    Sound shootSound;
+    Sound bulletSound;
     Music rainMusic;
     Rectangle bucket;
     Array<Rectangle> raindrops;
     Array<Rectangle> balas;
-
     long lastDropTime;
     long lastBulletTime;
-    int dropsGathered;
+    int vidas;
     int dropsDestroyed;
     int bucketVerticalSpeed;
 
@@ -41,11 +44,15 @@ public class GameScreen implements Screen {
         //cargamos los recursos de la gota y el cubo, cada uno de 64 pixels de lado
         dropImage = new Texture(Gdx.files.internal("droplet.png"));
         bucketImage = new Texture(Gdx.files.internal("bucket.png"));
-        //cargamos la bala la bala, de 16 pixels de lado
+        //cargamos  la bala, de 16 pixels de lado
         balaImage = new Texture(Gdx.files.internal("bala.png"));
+        //Cargamos la imagen para representar las vidas
+        liveImage = new Texture(Gdx.files.internal("live.png"));
 
-        //cargamos el efecto sonoro de la gota y la "música" de lluvia
-        dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.mp3"));
+        //cargamos los efectos sonoros y la música
+        hitSound = Gdx.audio.newSound(Gdx.files.internal("hit.mp3"));
+        bulletSound = Gdx.audio.newSound(Gdx.files.internal("bullet.mp3"));
+        shootSound = Gdx.audio.newSound(Gdx.files.internal("shoot.mp3"));
         rainMusic = Gdx.audio.newMusic(Gdx.files.internal("rain.mp3"));
 
         //comienza la reproducción de la música al momento
@@ -60,7 +67,7 @@ public class GameScreen implements Screen {
         bucket.x = 368; //800/2 - 64/2
         bucket.y = 20;
         bucket.width = 64;
-        bucket.height = 64;
+        bucket.height = 48;
         bucketVerticalSpeed = 0;
 
         //creamos un array para las gotas las gotas
@@ -70,13 +77,16 @@ public class GameScreen implements Screen {
         //creamos otro array para las balas
         balas = new Array<>();
 
+        //Inicializamos el número de vidas;
+        vidas = 3;
+
     }
 
     private void spawnRaindrop() {
         Rectangle raindrop = new Rectangle();
         raindrop.y = MathUtils.random(0, 416/*480-64*/);
         raindrop.x = 800;
-        raindrop.height = 64;
+        raindrop.height = 24;
         raindrop.width = 64;
         raindrops.add(raindrop);
         lastDropTime = TimeUtils.nanoTime();
@@ -84,9 +94,10 @@ public class GameScreen implements Screen {
 
 
     private void spawnBullet() {
+        bulletSound.play();
         Rectangle bala = new Rectangle();
         bala.x = bucket.x + 64;
-        bala.y = bucket.y + 32;
+        bala.y = bucket.y + 24;
         bala.height = 16;
         bala.width = 16;
         balas.add(bala);
@@ -100,6 +111,9 @@ public class GameScreen implements Screen {
         camera.update();
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
+        dibujarVidas();
+        game.font.setColor(Color.WHITE);
+        game.font.draw(game.batch, "Puntos: "+dropsDestroyed, 450, 450);
         game.batch.draw(bucketImage, bucket.x, bucket.y);
         for (Rectangle raindrop : raindrops) {
             game.batch.draw(dropImage, raindrop.x, raindrop.y);
@@ -107,18 +121,8 @@ public class GameScreen implements Screen {
         for (Rectangle bala : balas){
             game.batch.draw(balaImage, bala.x, bala.y);
         }
-        game.font.draw(game.batch, "Gotas destruidas: "+dropsDestroyed, 0, 300);
-        game.font.draw(game.batch, "Gotas pilladas: "+dropsGathered, 0, 400);
         game.batch.end();
-/*
-        //añadimos funcionalidad al mouse y a la pantalla táctil
-        if (Gdx.input.isTouched()) {
-            Vector3 touchPos = new Vector3();
-            touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-            camera.unproject(touchPos);
-            bucket.x = touchPos.x- 32;
-        }
-*/
+
         //añadimos funcionalidad al teclado para mover el cubo hacia los lados
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) bucket.x -= 300 * Gdx.graphics.getDeltaTime();
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) bucket.x += 300 * Gdx.graphics.getDeltaTime();
@@ -150,16 +154,25 @@ public class GameScreen implements Screen {
         for (Iterator<Rectangle> iter = raindrops.iterator(); iter.hasNext();) {
             Rectangle raindrop = iter.next();
             raindrop.x -= 100*Gdx.graphics.getDeltaTime();
+            //Si una gota sale de la pantalla la eliminamos
             if (raindrop.x < 0) iter.remove();
+            // Si una gota toca al jugador eliminamos una vida y reproducimos un sonido
             if (raindrop.overlaps(bucket)) { //TODO En lugar de recoger la gota y sumarla habría que restar una vida al jugador
-                dropsGathered++;
-                dropSound.play();
+                vidas--;
+                hitSound.play();
                 iter.remove();
+            }
+
+            //Si no quedan vidas termina el juego
+            if (vidas == 0){
+                game.setScreen(new GameOverScreen(game, dropsDestroyed));
+                dispose();
             }
 
             //Comprobamos si las gotas chocan con alguna bala
             for (Rectangle bala : balas) {
                 if (raindrop.overlaps(bala)) {
+                    shootSound.play();
                     dropsDestroyed++;
                     iter.remove();
                     balas.removeValue(bala, false);
@@ -176,6 +189,12 @@ public class GameScreen implements Screen {
 
         }
 
+    }
+
+    private void dibujarVidas() {
+        for (int i = 0; i<vidas; i++){
+            game.batch.draw(liveImage, (32 * i) + 5 , 420);
+        }
     }
 
     @Override
@@ -209,8 +228,12 @@ public class GameScreen implements Screen {
     public void dispose() {
         dropImage.dispose();
         bucketImage.dispose();
-        dropSound.dispose();
+        liveImage.dispose();
+        shootSound.dispose();
+        hitSound.dispose();
+        bulletSound.dispose();
         rainMusic.dispose();
 
     }
+
 }

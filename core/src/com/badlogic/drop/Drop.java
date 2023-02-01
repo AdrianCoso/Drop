@@ -1,6 +1,7 @@
 package com.badlogic.drop;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
@@ -10,7 +11,8 @@ public class Drop extends Game {
 
     public void create() {
         batch = new SpriteBatch();
-        font = new BitmapFont(); //Usa Arial, la fuente por defecto de libgdx
+        font = new BitmapFont(Gdx.files.internal("font.fnt")); //Usamos una fuente personalizada.
+
         this.setScreen(new MainMenuScreen(this));
 
     }
