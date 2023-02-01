@@ -41,7 +41,7 @@ public class GameOverScreen implements Screen {
 
         game.batch.begin();
         game.font.setColor(Color.RED);
-        game.font.draw(game.batch, "Has destruido "+puntuacion+" enemigos.", 100, 150);
+        game.font.draw(game.batch, "Has destruido "+puntuacion+" enemigos.", 50, 350);
         game.font.setColor(Color.WHITE);
         game.font.draw(game.batch, "Pulsa ENTER para jugar", 100, 100);
         game.batch.end();
