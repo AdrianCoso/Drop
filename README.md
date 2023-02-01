@@ -38,10 +38,10 @@ Si el número de vidas disponibles llega a cero se nos muestra la pantalla de fi
 
 Hemos podido probar la jugabilidad y el funcionamiento del juego sin preocuparnos de diseñar nuevos gráficos utilizando los que ya teníamos para el tutorial de libgdx. Sin embargo queremos darle un mejor aspecto al juego y que éste tenga sentido con el nuevo tipo de mecánicas que hemos desarrollado.
 
-## Gráficos
+### Gráficos
 Para la imagen del jugador bastará con sustituir la imagen del cubo por la de un [submarino](https://www.pngwing.com/en/free-png-nudbr/) y la de las gotas por unos [submarinistas](https://www.pngwing.com/en/free-png-vtaey) que tratan de sabotearnos. También añadimos la imagen del [corazón](https://www.pngwing.com/en/free-png-zrrvr) que representará las vidas. Todas estas imágenes han sido convenientemente modificadas para adaptarlas a nuestras necesidades usando GIMP. Además hemos modificado las dimensiones de los rectángulos usados en el juego para adaptarlos a estos nuevos gráficos. Estos rectángulos se utilizan para determinar los impactos y ahora no es tan sencillo disparar a los enemigos. De este modo el nuevo aspecto gráfico también mejora la jugabilidad incrementando ligeramente la dificultad.
 
-## Efectos sonoros y música 
+### Efectos sonoros y música 
 También se han añadido sonidos para ambientar los [disparos](https://pixabay.com/sound-effects/laser6quick-47339/) del submarino, la [destrucción](https://pixabay.com/sound-effects/explosion-asteroid-101886/) de los enemigos, el [impacto](https://pixabay.com/sound-effects/shooting-star-101304/) del submarino con un enemigo y el [fin del juego](https://pixabay.com/sound-effects/game-over-arcade-6435/). Estos efectos se reproducen convenientemente cada vez que suceden los eventos del juego que están relacionados con ellos. Además hemos sustituido la [música](https://pixabay.com/music/electronic-submarine-electronic-music-for-machinery-and-engineering-7582/) por otra menos relajante.
 
 Por último hemos descargado una [fuente](https://www.dafont.com/es/04b-30.font) y la hemos convertido a bitmap usando la herramienta [Hiero](https://libgdx.com/wiki/tools/hiero). Además hemos usado distintos colores para dar las indicaciones al jugador de cómo utilizar los controles y empezar a jugar. Esta misma fuente se utiliza en la pantalla del fin del juego.
